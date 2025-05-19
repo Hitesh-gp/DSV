@@ -1,0 +1,56 @@
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+
+import java.io.IOException;
+
+public class PlayersCount {
+
+    public static class PlayersMapper extends Mapper<Object, Text, Text, IntWritable> {
+        private Text country = new Text();
+        private IntWritable runs = new IntWritable();
+
+        public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
+            String[] players = value.toString().split(",");
+            // Skip header
+            if (!players[0].equalsIgnoreCase("Player Name") && players.length == 4) {
+                country.set(players[1].trim());
+                try {
+                    runs.set(Integer.parseInt(players[2].trim()));
+                    context.write(country, runs);
+                } catch (NumberFormatException e) {
+                    // Skip invalid lines
+                }
+            }
+        }
+    }
+
+    public static class PlayerCountReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
+        public void reduce(Text key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
+            int totalRuns = 0;
+            for (IntWritable val : values) {
+                totalRuns += val.get();
+            }
+            context.write(key, new IntWritable(totalRuns));
+        }
+    }
+
+    public static void main(String[] args) throws Exception {
+        Configuration conf = new Configuration();
+        Job job = Job.getInstance(conf, "Total runs by country");
+        job.setJarByClass(PlayersCount.class);
+        job.setMapperClass(PlayersMapper.class);
+        job.setReducerClass(PlayerCountReducer.class);
+        job.setOutputKeyClass(Text.class);
+        job.setOutputValueClass(IntWritable.class);
+        FileInputFormat.addInputPath(job, new Path(args[0]));
+        FileOutputFormat.setOutputPath(job, new Path(args[1]));
+        System.exit(job.waitForCompletion(true) ? 0 : 1);
+    }
+}
