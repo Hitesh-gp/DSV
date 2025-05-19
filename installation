@@ -1,0 +1,64 @@
+javac -classpath $(hadoop classpath) -d classes PlayersCount.java
+jar -cvf PlayersCount.jar -C classes/ .
+hadoop jar PlayersCount.jar PlayersCount input output
+cat output/part-r-00000
+
+
+
+
+
+
+
+✅ Step 1: Set Up Java and Hadoop on Your PC
+1.1 Install Java (required by Hadoop)
+Hadoop requires Java 8 or 11.
+
+On Ubuntu/Linux:
+
+bash
+Copy
+Edit
+sudo apt update
+sudo apt install openjdk-11-jdk -y
+java -version
+On Windows:
+
+Download Java 11 from: https://adoptium.net/
+
+Install and set JAVA_HOME in Environment Variables.
+
+1.2 Install Hadoop (Pseudo-distributed mode)
+🖥 For Ubuntu/Linux:
+bash
+Copy
+Edit
+# Download Hadoop (adjust version as needed)
+wget https://downloads.apache.org/hadoop/common/hadoop-3.3.6/hadoop-3.3.6.tar.gz
+tar -xvzf hadoop-3.3.6.tar.gz
+sudo mv hadoop-3.3.6 /usr/local/hadoop
+Add to .bashrc or .zshrc:
+bash
+Copy
+Edit
+export HADOOP_HOME=/usr/local/hadoop
+export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
+export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+Then run:
+
+bash
+Copy
+Edit
+source ~/.bashrc
+Set Java path in Hadoop:
+Edit:
+
+bash
+Copy
+Edit
+nano $HADOOP_HOME/etc/hadoop/hadoop-env.sh
+Set this:
+
+bash
+Copy
+Edit
+export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
