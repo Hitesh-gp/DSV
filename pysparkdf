@@ -1,0 +1,36 @@
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import avg, min, max, round, array, greatest, least, expr
+
+# Start Spark session
+spark = SparkSession.builder.appName("WeatherDataAnalysis").getOrCreate()
+
+# Sample data path - replace with your CSV path
+file_path = "path/to/weather_data.csv"
+
+# Load data
+df = spark.read.option("header", True).option("inferSchema", True).csv(file_path)
+
+# Show loaded data
+df.show(3)
+
+# List of month columns
+months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
+
+# 1. Add average temperature column
+df = df.withColumn("avg_temp", round(sum([df[m] for m in months]) / 12, 2))
+
+# 2. Add min and max temperature columns
+df = df.withColumn("Min_Temp", least(*[col(m) for m in month_cols]))
+df = df.withColumn("Max_Temp", greatest(*[col(m) for m in month_cols]))
+
+df.show(5)
+
+# 3. Find hottest year based on average temperature
+hottest_year = df.orderBy(df.avg_temp.desc()).select("YEAR", "avg_temp").first()
+print(f"Hottest Year: {hottest_year['YEAR']} with Avg Temp: {hottest_year['avg_temp']}")
+
+# 4. Find coldest year based on average temperature
+coldest_year = df.orderBy(df.avg_temp.asc()).select("YEAR", "avg_temp").first()
+print(f"Coldest Year: {coldest_year['YEAR']} with Avg Temp: {coldest_year['avg_temp']}")
+
+spark.stop()
