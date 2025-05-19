@@ -1,0 +1,59 @@
+1. Compare the performance for yearly rainfall data for last 20 years. Take at least three states
+data for comparison.
+import pandas as pd
+import matplotlib.pyplot as plt
+df = pd.read_csv('1.csv')
+plt.figure(figsize=(10, 6))
+for state in ['State1', 'State2', 'State3']:
+ state_data = df[df['State'] == state]
+ plt.plot(state_data['Year'], state_data['Rainfall'], label=state)
+plt.title('Yearly Rainfall Comparison (Last 20 Years)')
+plt.xlabel('Year')
+plt.ylabel('Rainfall (mm)')
+plt.legend()
+plt.grid(True)
+years = sorted(df['Year'].unique())
+xticks = years[::4]
+plt.xticks(xticks)
+plt.tight_layout()
+plt.show()
+
+2. Develop stacked column chart for comparing the sales data for three products for last 4
+years.
+import pandas as pd
+import matplotlib.pyplot as plt
+df = pd.read_csv(‘2.csv')
+df.set_index('Year', inplace=True)
+df[['Product1', 'Product2', 'Product3']].plot(kind='bar', stacked=True)
+plt.title('Sales Comparison for 3 Products')
+plt.xlabel('Year')
+plt.ylabel('Sales')
+plt.legend(title='Products')
+plt.show()
+
+3. Develop a subgraph showing % of internships offered by different companies to CDC, BDA,
+AIML and Cyber programs.
+import pandas as pd
+import matplotlib.pyplot as plt
+df = pd.read_csv('3.csv')
+totals = df[['CDC', 'BDA', 'AIML', 'Cyber']].sum(axis=1)
+df_percentage = df[['Company']].copy()
+df_percentage[['CDC', 'BDA', 'AIML', 'Cyber']] = df[['CDC', 'BDA', 'AIML', 'Cyber']].div(totals,
+axis=0) * 100
+fig, axes = plt.subplots(2, 2, figsize=(12, 8))
+programs = ['CDC', 'BDA', 'AIML', 'Cyber']
+colors = ['#1f77b4', '#2ca02c', '#d62728', '#9467bd']
+for ax, program, color in zip(axes.flatten(), programs, colors):
+ bars = ax.bar(df_percentage['Company'], df_percentage[program], color=color)
+ ax.set_title(f'{program} Program')
+ ax.set_ylabel('Percentage')
+ ax.set_ylim(0, 100)
+ ax.set_xticks(range(len(df_percentage['Company'])))
+ ax.set_xticklabels(df_percentage['Company'], rotation=45, ha='right')
+ for bar in bars:
+ height = bar.get_height()
+ ax.text(bar.get_x() + bar.get_width() / 2, height + 1,
+ f'{height:.1f}%', ha='center', va='bottom', fontsize=9)
+fig.suptitle('Percentage of Internships Offered by Companies per Program', fontsize=16)
+plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+plt.show()
